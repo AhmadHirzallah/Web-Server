@@ -13,66 +13,57 @@
 #ifndef CONFIGPARSER_HPP
 # define CONFIGPARSER_HPP
 
-# include <string>
-# include <vector>
-# include <map>
+# include "ServerConfig.hpp"
+
+#ifdef WHITESPACE
+# undef WHITESPACE
+# define WHITESPACE " \t\n\r"
+#else
+# define WHITESPACE " \t\n\r"
+#endif
+
+enum ParseResult
+{
+	OK,
+	NOT_PARSED
+};
+
+enum ParseState
+{
+	GLOBAL_BLOCK,
+	SERVER_BLOCK,
+	LOCATION_BLOCK
+};
 
 class ConfigParser
 {
+	/*Private Attributes*/
 	private:
-		enum ParseState
-		{
-			GLOBAL_BLOCK,
-			SERVER_BLOCK,
-			LOCATION_BLOCK
-		};
-
-		struct LocationConfig
-		{
-			/*
-			location
-				├── methods
-				├── root
-				├── index
-				├── autoindex
-				├── upload_path
-				├── return
-				└── cgi
-			*/
-			std::string	path;
-			std::string	root;
-			std::string	index;
-			std::string	upload_path;
-			std::string	redirect_target;
-			std::string	cgi_extension;
-			std::string	cgi_path;
-			bool	autoindex;
-			bool	upload_enabled;
-			bool	has_redirect;
-			bool	cgi_enabled;
-			int		redirect_code;
-			std::vector<std::string>	methods;
-		};
-
-		struct ServerConfig
-		{
-			/*
-			server
-				├── listen
-				├── error_page
-				├── client_max_body_size
-				└── location
-			*/
-			std::vector<int>	ports;
-			std::vector<std::string>	hosts;
-			std::vector<LocationConfig>	locations;
-			std::map<int, std::string>	error_pages;
-			size_t	client_max_body_size;
-		};
+		ParseResult	result;
+		ParseState	state;
+		std::string	filename;
+		std::vector<std::string>	tokens;
+		std::vector<ServerConfig>	servers;
+	/*Public Methods*/
 	public:
-		ConfigParser();
-		ConfigParser(std::string file_path);
+		ConfigParser(const std::string& file);
 		~ConfigParser();
+		void	print(void) const;
+		void	parse(void);
+		const std::vector<ServerConfig>&	getServers() const;
+	/*Private Methods*/
+	private:
+		void	printState(void) const;
+		void	printResult(void) const;
+		void	printFilename(void) const;
+		std::vector<std::string>	tokenizeFile(void);
 };
+
+std::string	trim(const std::string& s);
+bool	startsWith(const std::string& s, const std::string& prefix);
+std::vector<std::string>	split(const std::string& line, const std::string& delims);
+std::string	insertSpacesAroundTargets(const std::string& s, const std::string& targets);
+std::string	stripComment(const std::string& line);
+void	printTokens(std::vector<std::string> tokens);
 
 #endif

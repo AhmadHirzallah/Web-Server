@@ -1,9 +1,9 @@
 #include <iostream>
-#include "ServerConfig.hpp"
+#include "ConfigParser.hpp"
 
 int	main(void)
 {
-	LocationConfigData cfg;
+	/*LocationConfigData cfg;
 
 	cfg.autoindex = (true);
 	cfg.cgi_enabled = (true);
@@ -38,5 +38,17 @@ int	main(void)
 
 	ServerConfig serv(servdata);
 
-	serv.print();
+	serv.print();*/
+
+	ConfigParser	parser("server.conf");
+
+	try
+	{
+		parser.parse();
+	}
+	catch(const std::exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+		return (1);
+	}
 }

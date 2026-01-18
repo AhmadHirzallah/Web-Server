@@ -16,6 +16,9 @@
 # include <string>
 # include <vector>
 # include <iostream>
+# include <map>
+# include <fstream>
+# include <sstream>
 
 struct LocationConfigData
 {

@@ -13,10 +13,6 @@
 #ifndef SERVER_CONFIG_HPP
 # define SERVER_CONFIG_HPP
 
-# include <iostream>
-# include <string>
-# include <vector>
-# include <map>
 # include "LocationConfig.hpp"
 
 struct ServerConfigData
