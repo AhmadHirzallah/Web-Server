@@ -23,7 +23,7 @@ struct ServerConfigData
 	std::map<int, std::string>	error_pages;
 	std::vector<LocationConfig>	locations;
 
-	ServerConfigData(): client_max_body_size(1024*1024){}
+	ServerConfigData(): client_max_body_size(0){}
 };
 
 class ServerConfig

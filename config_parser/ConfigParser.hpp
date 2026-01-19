@@ -40,14 +40,17 @@ class ConfigParser
 	/*Private Attributes*/
 	private:
 		ParseResult	result;
-		ParseState	state;
 		std::string	filename;
+		std::vector<ParseState>	stateStack;
 		std::vector<std::string>	tokens;
 		std::vector<ServerConfig>	servers;
+		ServerConfigData	currentServer;
+		LocationConfigData	currentLocation;
+		
+		size_t	index;
 	/*Public Methods*/
 	public:
 		ConfigParser(const std::string& file);
-		~ConfigParser();
 		void	print(void) const;
 		void	parse(void);
 		const std::vector<ServerConfig>&	getServers() const;
@@ -57,6 +60,17 @@ class ConfigParser
 		void	printResult(void) const;
 		void	printFilename(void) const;
 		std::vector<std::string>	tokenizeFile(void);
+		typedef void (ConfigParser::*parseServerPTR)(void);
+		std::map<std::string, parseServerPTR>	serverFuncMap;
+		typedef void (ConfigParser::*parseLocationPTR)(void);
+		std::map<std::string, parseLocationPTR>	locationFuncMap;
+		void	parseServerBlock(void);
+		void	parseListen(void);
+		void	parseErrorPage(void);
+		void	parseClientMaxBodySize(void);
+		void	parseLocation(void);
+		const std::string&	peek(void) const;
+		const std::string&	consume(void);
 };
 
 std::string	trim(const std::string& s);
@@ -65,5 +79,6 @@ std::vector<std::string>	split(const std::string& line, const std::string& delim
 std::string	insertSpacesAroundTargets(const std::string& s, const std::string& targets);
 std::string	stripComment(const std::string& line);
 void	printTokens(std::vector<std::string> tokens);
+void	expect(const std::string& got, const std::string& expected);
 
 #endif
