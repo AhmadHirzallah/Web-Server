@@ -49,7 +49,7 @@ error_page 404 /errors/404.html;
 error_page 500 /errors/500.html;
 ```
 ### Purpose
- - Custem error responses
+ - Custom error responses
 ## 2. `location` Block
 ```nginx
 location /upload {

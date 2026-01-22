@@ -15,15 +15,23 @@
 
 # include "LocationConfig.hpp"
 
+struct ListenConfig
+{
+	std::string	host;
+	int	port;
+
+	ListenConfig(): port(0){}
+	ListenConfig(const std::string& h, int p): host(h), port(p){}
+};
+
 struct ServerConfigData
 {
-	std::vector<std::string>	hosts;
-	std::vector<int>	ports;
 	size_t	client_max_body_size;
+	std::vector<ListenConfig>	listens;
 	std::map<int, std::string>	error_pages;
 	std::vector<LocationConfig>	locations;
 
-	ServerConfigData(): client_max_body_size(0){}
+	ServerConfigData(): client_max_body_size(1024*1024){}
 };
 
 class ServerConfig
@@ -36,8 +44,6 @@ class ServerConfig
 		const std::vector<LocationConfig>	getLocations(void) const;
 		size_t getClientMaxBodySize(void) const;
 		const std::map<int, std::string> getErrorPages(void) const;
-		const std::vector<int>	getPorts(void) const;
-		const std::vector<std::string>&	getHosts(void) const;
 		void print(void) const;
 	/*Constructor & Destructor*/
 	public:

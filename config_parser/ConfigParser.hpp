@@ -14,6 +14,9 @@
 # define CONFIGPARSER_HPP
 
 # include "ServerConfig.hpp"
+# include <cstdlib>
+# include <cerrno>
+# include <climits>
 
 #ifdef WHITESPACE
 # undef WHITESPACE
@@ -74,11 +77,14 @@ class ConfigParser
 };
 
 std::string	trim(const std::string& s);
-bool	startsWith(const std::string& s, const std::string& prefix);
 std::vector<std::string>	split(const std::string& line, const std::string& delims);
 std::string	insertSpacesAroundTargets(const std::string& s, const std::string& targets);
 std::string	stripComment(const std::string& line);
 void	printTokens(std::vector<std::string> tokens);
 void	expect(const std::string& got, const std::string& expected);
+bool	isValidIPv4(const std::string& ip);
+int		parsePort(const std::string& s);
+size_t	parseSize(const std::string& value);
+int		parseHttpCode(const std::string& str);
 
 #endif

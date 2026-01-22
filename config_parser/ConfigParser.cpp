@@ -38,9 +38,9 @@ std::vector<std::string>	ConfigParser::tokenizeFile(void)
 	std::string	line;
 
 	if (file.is_open() == false)
-		throw (std::runtime_error("Cannot open config file."));
+		throw (std::runtime_error("webserv: cannot open config file."));
 	if (file.peek() == std::ifstream::traits_type::eof())
-		throw (std::runtime_error("Empty config file."));
+		throw (std::runtime_error("webserv: empty config file."));
 	while (std::getline(file, line))
 	{
 		std::vector<std::string>	tokens;
@@ -63,7 +63,7 @@ std::vector<std::string>	ConfigParser::tokenizeFile(void)
 		result.insert(result.end(), tokens.begin(), tokens.end());
 	}
 	if (result.size() == 0)
-		throw (std::runtime_error("Empty config file."));
+		throw (std::runtime_error("webserv: empty config file."));
 	return (result);
 }
 
@@ -104,7 +104,7 @@ void	ConfigParser::parseServerBlock(void)
 			(this->*f)();
 		}
 		else
-			throw (std::runtime_error("Unexpected token in server block '" + peek() + "'"));
+			throw (std::runtime_error("webserv: unexpected token in \"server\" block \"" + peek() + "\""));
 	}
 	consume();
 	servers.push_back(ServerConfig(currentServer));
@@ -156,33 +156,86 @@ void	ConfigParser::printFilename(void) const
 const std::string&	ConfigParser::peek(void) const
 {
 	if (index >= tokens.size())
-		throw std::runtime_error("Unexpected end of file");
-	return tokens[index];
+		throw (std::runtime_error("webserv: unexpected end of file \"eof\""));
+	return (tokens[index]);
 }
 
 const std::string&	ConfigParser::consume(void)
 {
 	const std::string& tok = peek();
 	index++;
-	return tok;
+	return (tok);
 }
 
 void	ConfigParser::parseListen(void)
 {
-	consume(); // will consume as instructed later
-	std::cout << "parseListen" << std::endl;
+	consume();
+	std::string	value = consume();
+	expect(peek(), ";");
+	consume();
+	size_t	colon = value.find(':');
+	std::string	host = "0.0.0.0";
+	int	port;
+	std::string	portStr = value.substr(colon + 1);
+	if (colon == std::string::npos)
+	{
+		port = parsePort(value);
+	}
+	else
+	{
+		host = value.substr(0, colon);
+		if (host.empty())
+			throw (std::runtime_error("webserv: empty host in \"listen\" directive"));
+		if (!isValidIPv4(host))
+			throw (std::runtime_error("webserv: invalid IPv4 address \"" + host + "\" in \"listen\" directive"));
+		port = parsePort(portStr);
+	}
+	for (size_t i = 0; i < currentServer.listens.size(); i++)
+	{
+		if (currentServer.listens[i].host == host && currentServer.listens[i].port == port)
+			throw (std::runtime_error("webserv: duplicate \"listen\" directive detected: \"" + host + ":" + portStr + "\""));
+	}
+	currentServer.listens.push_back(ListenConfig(host, port));
+	#ifdef PARSE_DEBUG
+	std::cout << "Parsing 'listen': " << host << ":" << port << std::endl;
+	#endif
 }
 
 void	ConfigParser::parseErrorPage(void)
 {
+	std::vector<std::string>	errpage_tokens;
+
 	consume();
-	std::cout << "parseErrorPage" << std::endl;
+	while (peek() != ";")
+		errpage_tokens.push_back(consume());
+	consume();
+	if (errpage_tokens.size() < 2)
+		throw (std::runtime_error("webserv: \"error_page\" directive requires at least one code and a path"));
+	const std::string& path = errpage_tokens.back();
+	if (path[0] != '/')
+		throw (std::runtime_error("webserv: \"error_page\" directive path must start with '/'"));
+	for (size_t i = 0; i < errpage_tokens.size() - 1; ++i)
+	{
+		const std::string& codeStr = errpage_tokens[i];
+		int code = parseHttpCode(codeStr);
+		currentServer.error_pages[code] = path;
+		#ifdef PARSE_DEBUG
+		std::cout << "Parsing 'error_page': " << code << " " << path << std::endl;
+		#endif
+	}
 }
 
 void	ConfigParser::parseClientMaxBodySize(void)
 {
 	consume();
-	std::cout << "parseClientMaxBodySize" << std::endl;
+	std::string	value = consume();
+	expect(peek(), ";");
+	consume();
+	size_t	bytes = parseSize(value);
+	currentServer.client_max_body_size = bytes;
+	#ifdef PARSE_DEBUG
+	std::cout << "Parsing 'client_max_body_size': " << bytes << std::endl;
+	#endif
 }
 
 void	ConfigParser::parseLocation(void)

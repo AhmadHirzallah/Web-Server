@@ -14,7 +14,7 @@ NAME=configparser
 
 CXX=c++
 
-CXXFLAGS= -Wall -Werror -Wextra -std=c++98 -DPARSE_DEBUG -g
+CXXFLAGS= -Wall -Werror -Wextra -std=c++98 -g #-DPARSE_DEBUG
 
 SRC=main.cpp LocationConfig.cpp ServerConfig.cpp ConfigParser.cpp ConfigParserUtils.cpp
 
