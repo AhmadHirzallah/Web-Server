@@ -1,0 +1,32 @@
+# ===== Build artifacts =====
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.exe
+*.out
+
+# ===== Binaries =====
+bin/
+build/
+dist/
+
+# ===== Debug / logs =====
+*.log
+*.tmp
+
+# ===== OS junk =====
+.DS_Store
+Thumbs.db
+
+# ===== Editor / IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Coverage =====
+*.gcda
+*.gcno
+*.gcov
