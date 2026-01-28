@@ -1,0 +1,5 @@
+*.o
+configparser
+*.conf
+/tests
+tester.sh
