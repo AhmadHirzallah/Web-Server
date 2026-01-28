@@ -30,3 +30,9 @@ Thumbs.db
 *.gcda
 *.gcno
 *.gcov
+
+
+# =========
+Docs/Temp/*
+!Docs/Temp/.gitkeep
+
