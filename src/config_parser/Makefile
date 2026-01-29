@@ -16,7 +16,7 @@ CXX=c++
 
 CXXFLAGS= -Wall -Werror -Wextra -std=c++98 -g #-DPARSE_DEBUG
 
-SRC=main.cpp LocationConfig.cpp ServerConfig.cpp ConfigParser.cpp ConfigParserUtils.cpp
+SRC=main.cpp LocationConfig.cpp ServerConfig.cpp Tokens.cpp Config.cpp
 
 OBJ=$(SRC:.cpp=.o)
 
