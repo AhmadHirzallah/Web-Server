@@ -10,20 +10,23 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME=configparser
+NAME=libconfig.a
 
 CXX=c++
 
-CXXFLAGS= -Wall -Werror -Wextra -std=c++98 -g #-DPARSE_DEBUG
+CXXFLAGS= -Wall -Werror -Wextra -std=c++98
 
-SRC=main.cpp LocationConfig.cpp ServerConfig.cpp Tokens.cpp Config.cpp
+SRC=LocationConfig.cpp ServerConfig.cpp Tokens.cpp Config.cpp
 
 OBJ=$(SRC:.cpp=.o)
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
+	ar rcs $(NAME) $(OBJ)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(OBJ)
