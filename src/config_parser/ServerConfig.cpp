@@ -20,6 +20,11 @@ const std::vector<LocationConfig>	ServerConfig::getLocations(void) const
 	return (this->data.locations);
 }
 
+const std::vector<ListenConfig>		ServerConfig::getListens(void) const
+{
+	return (this->data.listens);
+}
+
 size_t	ServerConfig::getClientMaxBodySize(void) const
 {
 	return (this->data.client_max_body_size);
