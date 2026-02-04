@@ -190,7 +190,6 @@ class Config
 		std::map<std::string, parseServerPTR>		serverFuncMap;
 		std::map<std::string, parseLocationPTR>		locationFuncMap;
 		Result						_result;
-		parseState					_state;
 		ServerData					_currentServer;
 		LocationData				_currentLocation;
 		std::vector<ServerConfig>	_servers;
@@ -207,6 +206,14 @@ class Config
 		void	parseClientMaxBodySize(void);
 		void	parseLocation(void);
 		void	parseErrorPage(void);
+	private:
+		void	parseMethods(void);
+		void	parseRoot(void);
+		void	parseIndex(void);
+		void	parseAutoIndex(void);
+		void	parseUploadPath(void);
+		void	parseReturn(void);
+		void	parseCGI(void);
 };
 
 #endif

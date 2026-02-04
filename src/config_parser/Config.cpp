@@ -26,12 +26,19 @@ const char	*ParsingException::what() const throw()
 	return (_msg.c_str());
 }
 
-Config::Config(const std::string &filepath): _result(NO), _state(GLOBAL_BLOCK), _tokens(Tokens(filepath))
+Config::Config(const std::string &filepath): _result(NO), _tokens(Tokens(filepath))
 {
 	serverFuncMap["listen"] = &Config::parseListen;
 	serverFuncMap["client_max_body_size"] = &Config::parseClientMaxBodySize;
 	serverFuncMap["location"] = &Config::parseLocation;
 	serverFuncMap["error_page"] = &Config::parseErrorPage;
+	// locationFuncMap["methods"] = &Config::parseMethods;
+	// locationFuncMap["root"] = &Config::parseRoot;
+	// locationFuncMap["index"] = &Config::parseIndex;
+	locationFuncMap["autoindex"] = &Config::parseAutoIndex;
+	// locationFuncMap["upload_path"] = &Config::parseUploadPath;
+	// locationFuncMap["return"] = &Config::parseReturn;
+	// locationFuncMap["cgi"] = &Config::parseCGI;
 }
 Config::~Config(){}
 
@@ -77,6 +84,31 @@ void	Config::parseServerBlock(void)
 	_stateStack.pop_back();
 }
 
+void	Config::parseLocation(void)
+{
+	_tokens.consume(); // `location`
+	_tokens.expect(_tokens.consume(), "{");
+	_stateStack.push_back(LOCATION_BLOCK);
+	_currentLocation = LocationData();
+	while (_tokens.peek() != "}")
+	{
+		std::map<std::string, parseLocationPTR>::const_iterator it = locationFuncMap.find(_tokens.peek());
+
+		if (it != locationFuncMap.end())
+		{
+			parseLocationPTR f = it->second;
+			(this->*f)();
+		}
+		else
+		{
+			throw (ParsingException("unexpected token in `location` block `" + _tokens.peek() + "`"));
+		}
+	}
+	_tokens.consume();
+	_currentServer.locations.push_back(_currentLocation);
+	_stateStack.pop_back();
+}
+
 void	Config::parseListen(void)
 {
 	_tokens.consume();
@@ -107,11 +139,6 @@ void	Config::parseListen(void)
 	_currentServer.listens.push_back(ListenConfig(host, port));
 }
 
-void	Config::parseLocation(void)
-{
-	_tokens.consume();
-}
-
 void	Config::parseErrorPage(void)
 {
 	std::vector<std::string>	tokens;
@@ -140,6 +167,26 @@ void	Config::parseClientMaxBodySize(void)
 	_tokens.expect(_tokens.peek(), ";");
 	_tokens.consume();
 	_currentServer.client_max_body_size = parseSize(value);
+}
+
+void	Config::parseAutoIndex(void)
+{
+	_tokens.consume();
+	std::string	value = _tokens.consume();
+	_tokens.expect(_tokens.peek(), ";");
+	_tokens.consume();
+	if (0 == value.compare("on"))
+	{
+		_currentLocation.autoindex = true;
+	}
+	else if (0 == value.compare("off"))
+	{
+		_currentLocation.autoindex = false;
+	}
+	else
+	{
+		throw (ParsingException("`autoindex` directive must only have an `on` or `off` value."));
+	}
 }
 
 static size_t	parseSize(const std::string& value)
@@ -227,7 +274,7 @@ static bool	isValidIPv4(const std::string& ip)
 	return (dots == 4);
 }
 
-int	parsePort(const std::string& s)
+static int	parsePort(const std::string& s)
 {
 	if (s.empty())
 		throw (ParsingException("empty port in `listen` directive."));
