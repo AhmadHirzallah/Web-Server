@@ -32,9 +32,9 @@ Config::Config(const std::string &filepath): _result(NO), _tokens(Tokens(filepat
 	serverFuncMap["client_max_body_size"] = &Config::parseClientMaxBodySize;
 	serverFuncMap["location"] = &Config::parseLocation;
 	serverFuncMap["error_page"] = &Config::parseErrorPage;
-	// locationFuncMap["methods"] = &Config::parseMethods;
+	locationFuncMap["methods"] = &Config::parseMethods;
 	// locationFuncMap["root"] = &Config::parseRoot;
-	// locationFuncMap["index"] = &Config::parseIndex;
+	locationFuncMap["index"] = &Config::parseIndex;
 	locationFuncMap["autoindex"] = &Config::parseAutoIndex;
 	// locationFuncMap["upload_path"] = &Config::parseUploadPath;
 	// locationFuncMap["return"] = &Config::parseReturn;
@@ -187,6 +187,40 @@ void	Config::parseAutoIndex(void)
 	{
 		throw (ParsingException("`autoindex` directive must only have an `on` or `off` value."));
 	}
+}
+
+void	Config::parseMethods(void)
+{
+	_tokens.consume();
+	std::vector<std::string>	methods;
+
+	while (_tokens.peek() != ";")
+	{
+		std::string	m = _tokens.consume();
+
+		if (m != "GET" && m != "POST" && m != "DELETE")
+			throw (ParsingException("unsupported method `" + m + "` in `methods` directive."));
+		for (std::size_t i = 0; i < methods.size(); i++)
+		{
+			if (methods[i] == m)
+				throw (ParsingException("duplicate method `" + m + "` in `methods` directive."));
+		}
+		methods.push_back(m);
+	}
+	_tokens.expect(_tokens.consume(), ";");
+	if (methods.empty())
+		throw (ParsingException("`methods` directive cannot have no methods."));
+	_currentLocation.methods = methods;
+}
+
+void	Config::parseIndex(void)
+{
+	_tokens.consume();
+	if (_tokens.peek() == ";")
+		throw (ParsingException("`index` directive must have a path."));
+	std::string	value = _tokens.consume();
+	_tokens.expect(_tokens.consume(), ";");
+	_currentLocation.index = value;
 }
 
 static size_t	parseSize(const std::string& value)
