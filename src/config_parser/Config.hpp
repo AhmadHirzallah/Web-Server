@@ -22,6 +22,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <set>
 
 /* ************************************************************************** */
 /*                                  Define                                    */
@@ -195,6 +196,7 @@ class Config
 		std::vector<ServerConfig>	_servers;
 		std::vector<parseState>		_stateStack;
 		Tokens						_tokens;
+		std::set<int>				_usedPorts;
 	public:
 		Config(const std::string &filepath);
 		~Config();

@@ -136,6 +136,9 @@ void	Config::parseListen(void)
 		if (_currentServer.listens[i].host == host && _currentServer.listens[i].port == port)
 			throw (ParsingException("duplicate `listen` directive detected: `" + host + ":" + portStr + "`"));
 	}
+	if (_usedPorts.count(port))
+		throw (ParsingException("multiple servers on same port not supported."));
+	_usedPorts.insert(port);
 	_currentServer.listens.push_back(ListenConfig(host, port));
 }
 
