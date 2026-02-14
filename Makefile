@@ -16,30 +16,41 @@ CXX=c++
 
 CXXFLAGS=-Wall -Werror -Wextra -std=c++98
 
-SRC=main.cpp
+SRC=main.cpp                         \
+	config_parser/Config.cpp         \
+	config_parser/Tokens.cpp         \
+	config_parser/LocationConfig.cpp \
+	config_parser/ServerConfig.cpp   \
+	event_handler/EventHandler.cpp   \
+	event_handler/Socket.cpp         \
+	event_handler/ClientSocket.cpp   \
+	event_handler/ListenSocket.cpp   \
+	event_handler/SocketFactory.cpp  \
+	event_handler/SignalSocket.cpp   \
+	http/Request.cpp                 \
+	http/RequestParser.cpp
 
-OBJ=$(SRC:.cpp=.o)
+SOURCES=$(addprefix src/, $(SRC))
 
-CONFIG_A=config_parser/libconfig.a
+INC=config_parser/ event_handler/ http/
 
-LINK=$(CONFIG_A)
+INCLUDES=$(addprefix -I src/, $(INC))
 
-all: config $(NAME)
+OBJ=$(SOURCES:.cpp=.o)
 
-$(NAME): $(CONFIG_A) $(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME) $(LINK)
+all: $(NAME)
 
-config:
-	make -C config_parser
+$(NAME): $(OBJ)
+	$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDES)
 
 clean:
-	make -C config_parser clean
 	rm -rf $(OBJ)
 
 fclean: clean
-	make -C config_parser fclean
 	rm -rf $(NAME)
-	
 
 re: fclean all
 

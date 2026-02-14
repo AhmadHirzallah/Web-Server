@@ -145,10 +145,10 @@ class ServerConfig
 	public:
 		ServerConfig(const ServerData &cfg);
 		~ServerConfig();
-		const std::vector<ListenConfig>		getListens(void) const;
-		const std::vector<LocationConfig>	getLocations(void) const;
+		const std::vector<ListenConfig>		&getListens(void) const;
+		const std::vector<LocationConfig>	&getLocations(void) const;
 		size_t								getClientMaxBodySize(void) const;
-		const std::map<int, std::string>	getErrorPages(void) const;
+		const std::map<int, std::string>	&getErrorPages(void) const;
 };
 
 /* ************************************************************************** */
