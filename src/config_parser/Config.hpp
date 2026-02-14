@@ -22,6 +22,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <set>
 
 /* ************************************************************************** */
 /*                                  Define                                    */
@@ -144,10 +145,10 @@ class ServerConfig
 	public:
 		ServerConfig(const ServerData &cfg);
 		~ServerConfig();
-		const std::vector<ListenConfig>		getListens(void) const;
-		const std::vector<LocationConfig>	getLocations(void) const;
+		const std::vector<ListenConfig>		&getListens(void) const;
+		const std::vector<LocationConfig>	&getLocations(void) const;
 		size_t								getClientMaxBodySize(void) const;
-		const std::map<int, std::string>	getErrorPages(void) const;
+		const std::map<int, std::string>	&getErrorPages(void) const;
 };
 
 /* ************************************************************************** */
@@ -190,12 +191,12 @@ class Config
 		std::map<std::string, parseServerPTR>		serverFuncMap;
 		std::map<std::string, parseLocationPTR>		locationFuncMap;
 		Result						_result;
-		parseState					_state;
 		ServerData					_currentServer;
 		LocationData				_currentLocation;
 		std::vector<ServerConfig>	_servers;
 		std::vector<parseState>		_stateStack;
 		Tokens						_tokens;
+		std::set<int>				_usedPorts;
 	public:
 		Config(const std::string &filepath);
 		~Config();
@@ -207,6 +208,14 @@ class Config
 		void	parseClientMaxBodySize(void);
 		void	parseLocation(void);
 		void	parseErrorPage(void);
+	private:
+		void	parseMethods(void);
+		void	parseRoot(void);
+		void	parseIndex(void);
+		void	parseAutoIndex(void);
+		void	parseUploadPath(void);
+		void	parseReturn(void);
+		void	parseCGI(void);
 };
 
 #endif
