@@ -11,36 +11,34 @@
 /* ************************************************************************** */
 
 #include "Config.hpp"
-#include "SocketFactory.hpp"
 #include "EventHandler.hpp"
-#include <signal.h>
+#include "SocketFactory.hpp"
 
 int	g_signal_write_fd = -1;
 
 int main()
 {
 	Config					cnf("server.conf");
-	EventHandler			loop;
+	EventHandler			handleer;
 	SocketFactory			socketeer;
 	std::vector<Socket*>	listenSockets;
 
-	signal(SIGINT, handle_signal);
-	signal(SIGTERM, handle_signal);
-	signal(SIGQUIT, handle_signal);
 	try
 	{
-		cnf.parse();
+		cnf.parse(); // throws Config::ParsingException
 		socketeer.create(cnf.getServers());
-		listenSockets = socketeer.getListeners();
-		for (std::size_t i = 0; i < listenSockets.size(); i++)
-		{
-			loop.addSocket(listenSockets[i]);
-		}
-		loop.run();
+		handleer.addSocket(socketeer.getListeners());
+		handleer.run(); // throws EventHandler::EventException
 	}
-	catch (const std::exception &e)
+	catch (const Config::ParsingException &e)
 	{
 		std::cerr << "webserv: " << e.what() << std::endl;
 		return (1);
+	}
+	catch (const EventHandler::EventException &e)
+	{
+		std::cerr << "webserv: " << e.what() << std::endl;
+		handleer.cleanup();
+		return (2);
 	}
 }

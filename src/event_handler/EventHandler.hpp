@@ -13,8 +13,6 @@
 #ifndef EVENT_HANDLER
 #define EVENT_HANDLER
 
-extern int	g_signal_write_fd;
-
 #include "Config.hpp"
 #include "Socket.hpp"
 #include "ClientSocket.hpp"
@@ -31,6 +29,9 @@ extern int	g_signal_write_fd;
 #include <sys/socket.h>
 #include <algorithm>
 #include <cstring>
+#include <signal.h>
+
+extern int	g_signal_write_fd;
 
 class EventHandler
 {
@@ -38,19 +39,22 @@ class EventHandler
 		std::vector<Socket*>	_sockets;
 		std::vector<Socket*>	_disconnected;
 		bool					_running;
+		bool					_shuttingDown;
 		void		acceptClient(Socket *sock);
 		void		readClient(ClientSocket *sock);
 		void		writeClient(ClientSocket *sock);
 		void		disconnectSocket(Socket *sock);
 		void		markDisconnected(Socket *sock);
-		void		cleanup(void);
 		void		initSignalSocket(void);
+		void		initSignalHandler(void);
 		void		signalHandle(Socket *sock);
 	public:
 		void		run(void);
 		static void	setNonBlocking(Socket *sock);
-		static void	setFdNonBlocking(fd_t fd);
+		static void	setNonBlocking(fd_t fd);
 		void		addSocket(Socket *sock);
+		void		addSocket(std::vector<Socket*> socks);
+		void		cleanup(void);
 		EventHandler();
 		~EventHandler();
 		class EventException: public std::exception

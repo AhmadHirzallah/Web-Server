@@ -14,7 +14,7 @@
 
 ClientSocket::ClientSocket(fd_t fd, const ServerConfig *srv): Socket(fd, CLIENT, srv), _keepAlive(false)
 {
-	this->setEvents(POLLIN);
+	setEvents(POLLIN);
 }
 
 ClientSocket::~ClientSocket()
@@ -24,12 +24,12 @@ ClientSocket::~ClientSocket()
 
 const std::string	&ClientSocket::getWriteBuffer(void) const
 {
-	return (this->_writeBuffer);
+	return (_writeBuffer);
 }
 
 const std::string	&ClientSocket::getReadBuffer(void) const
 {
-	return (this->_readBuffer);
+	return (_readBuffer);
 }
 
 bool	ClientSocket::hasDataToSend(void) const
@@ -39,12 +39,12 @@ bool	ClientSocket::hasDataToSend(void) const
 
 bool	ClientSocket::getKeepAlive(void) const
 {
-	return (this->_keepAlive);
+	return (_keepAlive);
 }
 
 void	ClientSocket::setKeepAlive(bool val)
 {
-	this->_keepAlive = val;
+	_keepAlive = val;
 }
 
 void	ClientSocket::updatePollEvents(void)

@@ -18,10 +18,10 @@ static size_t	parseSize(const std::string& value);
 static size_t	parseNumber(const std::string& str);
 static int		parseHttpCode(const std::string& str);
 
-ParsingException::ParsingException(const std::string &msg): _msg(msg){}
-ParsingException::ParsingException(const char *msg): _msg(msg){}
-ParsingException::~ParsingException() throw(){}
-const char	*ParsingException::what() const throw()
+Config::ParsingException::ParsingException(const std::string &msg): _msg(msg){}
+Config::ParsingException::ParsingException(const char *msg): _msg(msg){}
+Config::ParsingException::~ParsingException() throw(){}
+const char	*Config::ParsingException::what() const throw()
 {
 	return (_msg.c_str());
 }
@@ -229,7 +229,7 @@ void	Config::parseIndex(void)
 static size_t	parseSize(const std::string& value)
 {
 	if (value.empty())
-		throw (ParsingException("empty value in `client_max_body_size` directive."));
+		throw (Config::ParsingException("empty value in `client_max_body_size` directive."));
 	char suffix = value[value.size() - 1];
 	size_t 		multiplier = 1;
 	std::string	numberPart = value;
@@ -243,13 +243,13 @@ static size_t	parseSize(const std::string& value)
 			case 'M': multiplier = 1024 * 1024; break;
 			case 'G': multiplier = 1024 * 1024 * 1024ULL; break;
 			default:
-				throw (ParsingException("invalid size suffix in `client_max_body_size` directive."));
+				throw (Config::ParsingException("invalid size suffix in `client_max_body_size` directive."));
 		}
 	}
 	for (size_t i = 0; i < numberPart.size(); i++)
 	{
 		if (!std::isdigit(numberPart[i]))
-			throw (ParsingException("invalid number `" + numberPart + "` in `client_max_body_size` directive."));
+			throw (Config::ParsingException("invalid number `" + numberPart + "` in `client_max_body_size` directive."));
 	}
 	size_t number = parseNumber(numberPart);
 	return (number * multiplier);
@@ -263,11 +263,11 @@ static size_t	parseNumber(const std::string& str)
 
 	unsigned long value = std::strtoul(str.c_str(), &end, 10);
 	if (end == str.c_str())
-		throw (ParsingException(err_msg));
+		throw (Config::ParsingException(err_msg));
 	if (*end != '\0')
-		throw (ParsingException(err_msg));
+		throw (Config::ParsingException(err_msg));
 	if (errno == ERANGE || value == ULONG_MAX)
-		throw (ParsingException(err_msg));
+		throw (Config::ParsingException(err_msg));
 	return (static_cast<size_t>(value));
 }
 
@@ -276,11 +276,11 @@ static int	parseHttpCode(const std::string& str)
 	for (std::size_t i = 0; i < str.size(); i++)
 	{
 		if (!std::isdigit(str[i]))
-			throw (ParsingException("invalid error code `" + str + "` in `error_page` directive."));
+			throw (Config::ParsingException("invalid error code `" + str + "` in `error_page` directive."));
 	}
 	int code = std::atoi(str.c_str());
 	if (code < 300 || code > 599)
-		throw (ParsingException("`error_page` directive error code must be between 300 and 599."));
+		throw (Config::ParsingException("`error_page` directive error code must be between 300 and 599."));
 	return (code);
 }
 
@@ -314,14 +314,14 @@ static bool	isValidIPv4(const std::string& ip)
 static int	parsePort(const std::string& s)
 {
 	if (s.empty())
-		throw (ParsingException("empty port in `listen` directive."));
+		throw (Config::ParsingException("empty port in `listen` directive."));
 	for (size_t i = 0; i < s.size(); i++)
 	{
 		if (!std::isdigit(s[i]))
-			throw (ParsingException("invalid port `" + s + "` in `listen` directive."));
+			throw (Config::ParsingException("invalid port `" + s + "` in `listen` directive."));
 	}
 	long port = std::strtol(s.c_str(), NULL, 10);
 	if (port < 1 || port > 65535)
-		throw (ParsingException("port out of range `"+ s +"` in `listen` directive."));
+		throw (Config::ParsingException("port out of range `"+ s +"` in `listen` directive."));
 	return (static_cast<int>(port));
 }

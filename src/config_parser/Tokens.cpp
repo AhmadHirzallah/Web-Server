@@ -85,7 +85,7 @@ Tokens::Tokens(const std::string &filepath)
 const std::string	&Tokens::peek(void) const
 {
 	if (this->_index >= this->_tokens.size())
-		throw (ParsingException("unexpected end of file `eof`"));
+		throw (Config::ParsingException("unexpected end of file `eof`"));
 	return (this->_tokens[this->_index]);
 }
 
@@ -99,7 +99,7 @@ const std::string	&Tokens::consume(void)
 void	Tokens::expect(const std::string &got, const std::string &exp)
 {
 	if (got != exp)
-		throw (ParsingException("expected `" + exp + "`, got `" + got + "`"));
+		throw (Config::ParsingException("expected `" + exp + "`, got `" + got + "`"));
 }
 
 void	Tokens::reset(void)
@@ -126,9 +126,9 @@ void	Tokens::tokenize(void)
 	if (this->_result == OK)
 		return ;
 	if (file.is_open() == false)
-		throw (ParsingException("cannot open config file."));
+		throw (Config::ParsingException("cannot open config file."));
 	if (file.peek() == std::ifstream::traits_type::eof())
-		throw (ParsingException("empty config file."));
+		throw (Config::ParsingException("empty config file."));
 	while (std::getline(file, line))
 	{
 		std::vector<std::string>	toks;
@@ -142,7 +142,7 @@ void	Tokens::tokenize(void)
 		result.insert(result.end(), toks.begin(), toks.end());
 	}
 	if (result.size() == 0)
-		throw (ParsingException("empty config file."));
+		throw (Config::ParsingException("empty config file."));
 	this->_tokens = result;
 	this->_result = OK; 
 }

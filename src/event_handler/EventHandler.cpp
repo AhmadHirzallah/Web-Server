@@ -24,6 +24,7 @@ void	EventHandler::run(void)
 {
 	if (_sockets.empty())
 		throw (EventException("no listening sockets!"));
+	initSignalHandler();
 	initSignalSocket();
 	while (_running)
 	{
@@ -47,14 +48,13 @@ void	EventHandler::run(void)
 			_sockets[i]->setRevents(pfds[i].revents);
 		}
 
-		std::size_t	count = _sockets.size();
-		for (std::size_t i = 0; i < count; ++i)
+		for (std::size_t i = 0; i < _sockets.size(); ++i)
 		{
 			Socket	*sock = _sockets[i];
 
 			if (sock->getRevents() == 0)
 				continue ;
-			if (sock->hasRevent(POLLHUP | POLLERR | POLLNVAL))
+			if (sock->hasRevent(POLLERR | POLLNVAL))
 			{
 				markDisconnected(sock);
 				continue ;
@@ -66,16 +66,16 @@ void	EventHandler::run(void)
 			}
 			if (sock->getType() == LISTEN && sock->hasRevent(POLLIN))
 			{
-				acceptClient(static_cast<ListenSocket*>(sock));
+				if (!_shuttingDown)
+					acceptClient(static_cast<ListenSocket*>(sock));
 				continue ;
 			}
-			if (sock->getType() == CLIENT && sock->hasRevent(POLLIN))
+			if (sock->getType() == CLIENT)
 			{
-				readClient(static_cast<ClientSocket*>(sock));
-			}
-			if (sock->getType() == CLIENT && sock->hasRevent(POLLOUT))
-			{
-				writeClient(static_cast<ClientSocket*>(sock));
+				if (sock->hasRevent(POLLIN))
+					readClient(static_cast<ClientSocket*>(sock));
+				if (sock->hasRevent(POLLOUT))
+					writeClient(static_cast<ClientSocket*>(sock));
 			}
 		}
 
@@ -151,7 +151,6 @@ void	EventHandler::acceptClient(Socket *sock)
 
 		if (clientFd < 0)
 			break ;
-		
 		ClientSocket	*c = new ClientSocket(clientFd, sock->getServer());
 		setNonBlocking(c);
 		_sockets.push_back(c);
@@ -178,13 +177,14 @@ void		EventHandler::cleanup(void)
 		(*it)->setFd(-1);
 		delete (*it);
 	}
+	if (g_signal_write_fd != -1)
+		close(g_signal_write_fd);
 	_sockets.clear();
 }
 
-EventHandler::EventHandler(): _running(true)
+EventHandler::EventHandler(): _running(true), _shuttingDown(false)
 {
 
-	
 }
 
 EventHandler::~EventHandler()
@@ -194,6 +194,7 @@ EventHandler::~EventHandler()
 
 void		EventHandler::signalHandle(Socket *sock)
 {
+	_shuttingDown = true;
 	char	buffer[16];
 	read(sock->getFd(), buffer, sizeof(buffer));
 	_running = false;
@@ -201,7 +202,7 @@ void		EventHandler::signalHandle(Socket *sock)
 	close(g_signal_write_fd);
 }
 
-void	EventHandler::setFdNonBlocking(fd_t fd)
+void	EventHandler::setNonBlocking(fd_t fd)
 {
 	int	flags = fcntl(fd, F_GETFL, 0);
 	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
@@ -213,7 +214,7 @@ void	EventHandler::initSignalSocket(void)
 	if (pipe(pipefd) < 0)
 		throw (EventException("failed to create pipe for SignalSocket."));
 	g_signal_write_fd = pipefd[1];
-	setFdNonBlocking(pipefd[0]);
+	setNonBlocking(pipefd[0]);
 	addSocket(new SignalSocket(pipefd[0]));
 }
 
@@ -222,4 +223,17 @@ void	handle_signal(int sig)
 	(void)sig;
 	char	byte = 1;
 	write(g_signal_write_fd, &byte, 1);
+}
+
+void		EventHandler::addSocket(std::vector<Socket*> socks)
+{
+	for (std::size_t i = 0; i < socks.size(); i++)
+		addSocket(socks[i]);
+}
+
+void		EventHandler::initSignalHandler(void)
+{
+	signal(SIGINT, handle_signal);
+	signal(SIGTERM, handle_signal);
+	signal(SIGQUIT, handle_signal);
 }

@@ -46,17 +46,6 @@ enum parseState { GLOBAL_BLOCK, SERVER_BLOCK, LOCATION_BLOCK };
 /*                                 Exception                                  */
 /* ************************************************************************** */
 
-class ParsingException: public std::exception
-{
-	private:
-		std::string	_msg;
-	public:
-		explicit ParsingException(const std::string &msg);
-		explicit ParsingException(const char *msg);
-		virtual ~ParsingException() throw();
-		virtual const char	*what() const throw();
-};
-
 /* ************************************************************************** */
 /*                              Location Config                               */
 /* ************************************************************************** */
@@ -216,6 +205,17 @@ class Config
 		void	parseUploadPath(void);
 		void	parseReturn(void);
 		void	parseCGI(void);
+	public:
+		class ParsingException: public std::exception
+		{
+			private:
+				std::string	_msg;
+			public:
+				explicit ParsingException(const std::string &msg);
+				explicit ParsingException(const char *msg);
+				virtual ~ParsingException() throw();
+				virtual const char	*what() const throw();
+		};
 };
 
 #endif
