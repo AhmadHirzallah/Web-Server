@@ -67,15 +67,15 @@ void	EventHandler::run(void)
 			if (sock->getType() == LISTEN && sock->hasRevent(POLLIN))
 			{
 				if (!_shuttingDown)
-					acceptClient(static_cast<ListenSocket*>(sock));
+					acceptClient(dynamic_cast<ListenSocket*>(sock));
 				continue ;
 			}
 			if (sock->getType() == CLIENT)
 			{
 				if (sock->hasRevent(POLLIN))
-					readClient(static_cast<ClientSocket*>(sock));
+					readClient(dynamic_cast<ClientSocket*>(sock));
 				if (sock->hasRevent(POLLOUT))
-					writeClient(static_cast<ClientSocket*>(sock));
+					writeClient(dynamic_cast<ClientSocket*>(sock));
 			}
 		}
 
